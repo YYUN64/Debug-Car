@@ -1,0 +1,30 @@
+# ---- 编译产物：不提交 ----
+*.o
+*.obj
+*.exe
+*.out
+*.gch
+a.out
+
+# ---- 编辑器 / IDE ----
+.vscode/
+.idea/
+*.swp
+
+# ---- 嵌入式工程产物 ----
+build/
+Debug/
+Release/
+Objects/
+Listings/
+*.hex
+*.bin
+*.elf
+*.map
+*.uvguix.*
+*.ioc.bak
+
+# ---- Python 缓存（上位机）----
+__pycache__/
+*.pyc
+.venv/
