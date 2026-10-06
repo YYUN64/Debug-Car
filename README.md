@@ -8,7 +8,7 @@
 
 | 项 | 内容 | 分值 | 计划代码位置 | 状态 |
 |---|---|---|---|---|
-| 1 | OLED 多级菜单 | 6 | `firmware/modules/menu/` | 进行中（菜单逻辑已跑通，待补硬件输出层） |
+| 1 | OLED 多级菜单 | 6 | `firmware/menu/` | 进行中（菜单逻辑已跑通，待补硬件输出层） |
 | 2 | LED 控制 | 6 | `firmware/modules/led/` | 未开始 |
 | 3 | 人机交互与串口通信 | 8 | `firmware/modules/protocol/`、`host/` | 未开始 |
 | 4 | 巡线（传感器 / 一圈 / 两圈 / 特殊元素 / 完整地图） | 35 | `firmware/modules/track/` | 未开始 |
@@ -19,7 +19,7 @@
 | 6.4 | 巡线速度与控制性能 | 10 | `firmware/modules/track/pid/` | 未开始 |
 
 基础部分必须拿到完整 60 分，才能参加拓展部分（40 分）的线下考核。
-所有给分代码集中在 `firmware/modules/` 下，便于按项自查。
+给分代码集中在 `firmware/` 下：菜单框架在 `firmware/menu/`，各功能模块在 `firmware/modules/`。
 
 ## 目录结构
 
@@ -27,12 +27,13 @@
 .
 ├── README.md
 ├── .gitignore
-├── docs/          赛题要点、硬件资料、调试记录
-├── firmware/      小车固件工程（培训发放主控板后开始）
-└── host/          上位机（Python，串口通信与状态显示）
+├── shell.nix          gcc / make / python3(pyserial) 开发环境
+└── firmware/          小车固件工程（培训发放主控板后开始）
+    ├── menu/          OLED 多级菜单 —— 整个固件的顶层框架
+    └── module/        各功能模块：LED / 串口 / 巡线 / 参数设置…
 ```
 
-> Git 不跟踪空目录，所以暂时用 `.gitkeep` 占位；放入真实文件后可以删掉。
+> `firmware/modules/` 目前还是空的 —— Git 不跟踪空目录，等第一个功能模块落地时它自然会出现。
 
 ## 关键约束（决定了整个工程架构）
 
@@ -93,4 +94,4 @@
 ## 说明
 
 - 本仓库代码由本人独立完成，不与其他选手共用。
-- 赛题原文要点与评分细则整理进 `docs/`。
+- 赛题原文要点与评分细则整理在各模块的 `README.md` 里。
