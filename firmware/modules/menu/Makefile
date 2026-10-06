@@ -1,4 +1,4 @@
-# 在电脑上编译并运行 menu 模块的测试
+# 在电脑上编译并运行 menu 模块
 #
 #   make run    编译 + 运行
 #   make clean  清理
@@ -9,10 +9,10 @@ CC         ?= gcc
 CFLAGS     ?= -std=c99 -Wall -Wextra -O0 -g
 
 BUILD_DIR  := build
-TARGET     := $(BUILD_DIR)/test_menu
+TARGET     := $(BUILD_DIR)/menu
 
-$(TARGET): menu.c test_menu.c menu.h | $(BUILD_DIR)
-	$(CC) $(CFLAGS) menu.c test_menu.c -o $@
+$(TARGET): menu.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) menu.c -o $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

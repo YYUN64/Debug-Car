@@ -8,7 +8,7 @@
 
 | 项 | 内容 | 分值 | 计划代码位置 | 状态 |
 |---|---|---|---|---|
-| 1 | OLED 多级菜单 | 6 | `firmware/modules/menu/` | 进行中（逻辑完成，待与硬件层对接） |
+| 1 | OLED 多级菜单 | 6 | `firmware/modules/menu/` | 进行中（菜单逻辑已跑通，待补硬件输出层） |
 | 2 | LED 控制 | 6 | `firmware/modules/led/` | 未开始 |
 | 3 | 人机交互与串口通信 | 8 | `firmware/modules/protocol/`、`host/` | 未开始 |
 | 4 | 巡线（传感器 / 一圈 / 两圈 / 特殊元素 / 完整地图） | 35 | `firmware/modules/track/` | 未开始 |
