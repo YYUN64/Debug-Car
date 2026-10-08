@@ -30,7 +30,7 @@
 ├── shell.nix          gcc / make / python3(pyserial) 开发环境
 └── firmware/          小车固件工程（培训发放主控板后开始）
     ├── menu/          OLED 多级菜单 —— 整个固件的顶层框架
-    └── module/        各功能模块：LED / 串口 / 巡线 / 参数设置…
+    └── modules/        各功能模块：LED / 串口 / 巡线 / 参数设置…
 ```
 
 > `firmware/modules/` 目前还是空的 —— Git 不跟踪空目录，等第一个功能模块落地时它自然会出现。
