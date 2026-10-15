@@ -8,7 +8,7 @@
 
 | 项 | 内容 | 分值 | 计划代码位置 | 状态 |
 |---|---|---|---|---|
-| 1 | OLED 多级菜单 | 6 | `firmware/menu/` | 进行中（菜单逻辑已跑通，待补硬件输出层） |
+| 1 | OLED 多级菜单 | 6 | `firmware/menu/` | 进行中（菜单逻辑已跑通，绘制已与逻辑分离，待接硬件） |
 | 2 | LED 控制 | 6 | `firmware/modules/led/` | 未开始 |
 | 3 | 人机交互与串口通信 | 8 | `firmware/modules/protocol/`、`host/` | 未开始 |
 | 4 | 巡线（传感器 / 一圈 / 两圈 / 特殊元素 / 完整地图） | 35 | `firmware/modules/track/` | 未开始 |
@@ -27,9 +27,10 @@
 .
 ├── README.md
 ├── .gitignore
-├── shell.nix          gcc / make / python3(pyserial) 开发环境
-└── firmware/          小车固件工程（培训发放主控板后开始）
+├── shell.nix          PC 端开发环境：gcc / make / python3(pyserial)
+└── firmware/          小车固件工程（主控板 STM32F103，Arm Cortex-M3）
     ├── menu/          OLED 多级菜单 —— 整个固件的顶层框架
+    │                  build() 生成这一屏的文字，draw() 负责送到屏幕
     └── modules/        各功能模块：LED / 串口 / 巡线 / 参数设置…
 ```
 
@@ -50,29 +51,90 @@
 
 ## 模块移植约定
 
+目标平台已确定为 **STM32F103 + STM32 HAL 库**（详见「开发环境」）。
 `firmware/modules/` 下的模块遵守两条约定，目标是「先在电脑上写和测，拿到板子直接移植」：
 
 1. **纯 C**，不使用单片机厂商私有类型，统一用 `<stdint.h>` 的 `uint8_t` 等标准类型；
 2. 硬件操作通过**回调函数指针注入**（例如「点亮 OLED 某段」「读某个按键」），
-   模块自身不直接碰寄存器。
+   模块自身不直接碰寄存器，也不直接调用 HAL。
 
 这样每个模块都能配一个 PC 上的测试程序，用 gcc 编译运行、验证逻辑，
-不必等硬件到位。
+不必等硬件到位。`firmware/menu/` 已经按这个思路分好了层：
+`build()` 只生成要显示的文字，`draw()` 才是碰屏幕的那一层。
 
 ## 开发环境
 
+**全部开发工作都在 Linux（NixOS）上完成**，工具链由仓库根目录的 `shell.nix` 提供，
+`nix-shell` 一条命令进入，不需要装任何全局软件。
+
 | 项目 | 内容 |
 |---|---|
-| 主控板 | 待定（培训后补充） |
-| 工具链 | 待定（Keil / STM32CubeIDE / PlatformIO） |
+| 主控板 | **STM32F103 系列**（Arm Cortex-M3 内核，72 MHz） |
+| 开发方式 | **STM32 HAL 库** |
+| 固件框架 | PlatformIO + `framework = stm32cube`（即 ST 官方 STM32Cube HAL） |
+| 交叉编译器 | `arm-none-eabi-gcc` |
+| 烧录 / 调试 | ST-Link（`openocd` / `st-flash`）；无 ST-Link 时可用串口 ISP（`stm32flash`） |
+| 串口终端 | `picocom` 或 `pio device monitor` |
 | 上位机 | Python 3 + pyserial |
 | 版本管理 | Git + GitHub |
+
+> 培训教程（`环境配置教程.pdf`）走的是 **Windows + Keil MDK + STM32CubeMX** 路线。
+> Keil MDK 只有 Windows 版，Linux 上用不了；但赛题只要求 **STM32F103 + HAL 库**，
+> IDE 是自选的，因此这里改用 PlatformIO。教程中仍然有效的部分是
+> **芯片型号、HAL 库、以及"烧录后板载 LED 闪烁即链路正常"这条验收标准**。
+
+### 工作流
+
+```bash
+cd ~/git/Debug-Car
+nix-shell                         # 进入开发环境（arm-none-eabi-gcc / openocd / stlink / picocom / platformio）
+
+pio boards STM32F103              # 列出支持的 F103 板子
+pio run                           # 编译
+pio run -t upload                 # 烧录（ST-Link）
+pio device monitor                # 看串口输出
+```
+
+**板子 id 待定** —— 培训板的具体型号要等拿到板子才知道，对应关系参考：
+
+| 培训板 | PlatformIO board id |
+|---|---|
+| BluePill / 最小系统板 STM32F103C8T6（64K Flash） | `bluepill_f103c8` |
+| 同上，标称 128K Flash | `bluepill_f103c8_128k` |
+| BlackPill STM32F103C8T6 | `blackpill_f103c8` |
+| ST Nucleo-F103RB | `nucleo_f103rb` |
+
+> 板子到了以后拿芯片丝印去 `pio boards STM32F103` 里对；不能确定时先用
+> `bluepill_f103c8`（F103C8T6 是最常见的培训芯片）。
+
+### 烧录方式
+
+| 手头有什么 | 怎么烧 |
+|---|---|
+| ST-Link（教程里那种） | `pio run -t upload`，或 `st-flash write .pio/build/<board>/firmware.bin 0x8000000` |
+| 只有 USB 转串口 | F103 自带 ROM 引导程序：BOOT0 接 1 再上电，用 `stm32flash` 走 USART1 烧录 |
+
+**验收标准（与培训教程一致）**：编译烧录后**板载 LED 闪烁**，说明
+「工具链 + HAL + 烧录」整条链路已通。能找到芯片型号并不等于工程一定能编译成功。
+
+### 常见问题
+
+- **PlatformIO 的工具链报 `No such file or directory`**：NixOS 上预编译二进制通常找不到
+  `/lib64/ld-linux-x86-64.so.2`。解法是在系统配置里开 `programs.nix-ld.enable = true;`。
+- **串口 `Permission denied`**：用户不在 `dialout` 组，或 udev 规则未安装。
+- **ST-Link 认不到设备**：`services.udev.packages` 里没加 `openocd` / `stlink`，
+  或需要重新插拔一次。
+
+> **环境待验证（2026-10-15）**：`pio --version`（6.1.19）与 `pio boards STM32F103`
+> （列出 20 块 F103 板子）已实测可用；但**端到端编译还没跑通** ——
+> 首次下载 arm-none-eabi 工具链时卡住了。等板子到手第一次 `pio run` 时验证，
+> 若报上面第一条错误，就按上面的办法开 `nix-ld`。
 
 ## 开发计划
 
 | 阶段 | 内容 | 对应给分项 | 状态 |
 |---|---|---|---|
-| 0 | C 语言基础、Git 工作流、工具链 | 第 5 项 | 进行中 |
+| 0 | C 语言基础、Git 工作流、工具链（Linux + PlatformIO + `arm-none-eabi-gcc`） | 第 5 项 | 进行中 |
 | 1 | OLED 多级菜单状态机 | 第 1 项 | 进行中 |
 | 2 | LED 控制与状态显示 | 第 2 项 | 未开始 |
 | 3 | 串口协议与上位机 | 第 3 项 | 未开始 |
