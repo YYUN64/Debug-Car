@@ -1,13 +1,15 @@
 #include <stdio.h>
 // 先定义一些变量备用
 #define MAX_SCREEN 7
-char title[MAX_SCREEN][40] = { 
+#define LINE_LEN 40
+#define LINE 4
+char title[MAX_SCREEN][LINE_LEN] = { 
       // 第 0 屏    第 1 屏    第 2 屏     第 3 屏     第 4 屏
 	"主菜单", "LED 控制", "信息显示", "巡线功能", "拓展功能",
       // 第 5 屏    第 6 屏
         " LED 1 ", " LED 2 ",
 };
-char name[MAX_SCREEN][4][40] = {
+char name[MAX_SCREEN][LINE][LINE_LEN] = {
     { "LED 控制", "信息显示", "巡线功能", "拓展功能" }, // 第0屏 主菜单
     { "LED 1"   , "LED 2"   , "常亮"    , "交替"     }, // 第1屏 LED控制
     { "学号"    , "版本"    , "运行时间"             }, // 第2屏 信息显示
@@ -26,7 +28,7 @@ int parent[MAX_SCREEN] = { // 回到哪
 	 1, // 灯一
 	 1, // 灯二
 };
-int child[MAX_SCREEN][4] = {
+int child[MAX_SCREEN][LINE] = {
 	{  1,  2,  3,  4}, // 主菜单
 	{  5,  6, -1, -1}, // LED 控制
 	{ -1, -1, -1, -1}, // 信息显示
