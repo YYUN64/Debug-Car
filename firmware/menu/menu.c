@@ -18,6 +18,7 @@ char name[MAX_SCREEN][LINE][LINE_LEN] = {
     { "开"      , "关"                               },	// 第5屏 灯一
     { "开"      , "关"                               },	// 第6屏 灯二
 };
+char lines[LINE][LINE_LEN]; // 给OLED屏幕输出文字使用，储存字符
 int count[MAX_SCREEN]  = { 4, 4, 3, 3, 3, 2, 2 };  //判断每一屏有几行
 int parent[MAX_SCREEN] = { // 回到哪
 	-1, // 主菜单
@@ -37,17 +38,43 @@ int child[MAX_SCREEN][LINE] = {
 	{ -1, -1, -1, -1}, // 灯一
 	{ -1, -1, -1, -1}, // 灯二
 };
-int cursor[MAX_SCREEN] = { 0 };  //指针位置
-int screen    = 0;               //屏数
-				    
+int cursor[MAX_SCREEN] = { 0 };  // 指针位置
+int screen    = 0;               // 屏数
+
+// 构建字符内容
+void build(void) 
+{
+    int i, j, n;
+    for (i = 0; i < LINE; i++) { // 判断这个OLED屏幕有多少行数
+    	if(i < count[screen]) { // 判断这一屏有多少有效文本输出
+		lines[i][0] = ' '; // 第零个字符是' '
+		                   // 决定第一字符填入什么
+		if(i == cursor[screen]) lines[i][1] = '>';
+		else                    lines[i][1] = ' ';
+		lines[i][2] = ' '; // 第二个字符是' '
+		                   // 效果' > ' || '   '
+		n = 3;             // 前面三个空都有内容了，从第四个空开始填
+		                   // 正式填入文字部分
+		for (j = 0; name[screen][i][j] != '\0'; j++) {
+			lines[i][n] = name[screen][i][j];
+			n++;
+		}
+		                   // 让末尾字符是'\0'
+		lines[i][n] = '\0';
+	}
+	else { // 发现这一行没有任何有效内容，直接让第零个字符为'\0'
+		lines[i][0] = '\0'; 
+	} // 这么写好看一点，可以不使用{}
+    }
+}
 // 画出屏幕
+// 把这一屏送到屏幕：电脑上用 printf，真机上换成 OLED 绘制
 void draw(void)
 {
     int i;
     printf("\n=== %s ===\n", title[screen]);
-    for (i = 0; i < count[screen]; i++) {
-        if (i == cursor[screen]) printf(" > %s\n", name[screen][i]);
-        else printf("   %s\n", name[screen][i]);
+    for (i = 0; i < LINE; i++) {
+    	if(lines[i][0] != '\0') printf("%s\n", lines[i]);
     }
 }
 
@@ -56,6 +83,7 @@ int main(void)
 {
     int next;
     int key; // 按键
+    build();
     draw();  // 显示菜单
     while (scanf("%d", &key) == 1) { // input 
 	// 向上走（循环）
@@ -79,6 +107,7 @@ int main(void)
 		cursor[screen] = 0;
 		screen = parent[screen];
 	}
+	build();
         draw(); // 重新画屏
     }
     return 0;
