@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "action.h"   // ← 新加：动作都写在 action.c 里，这里只留声明
 // 先定义一些变量备用
 #define MAX_SCREEN 7
 #define LINE_LEN 40
@@ -55,7 +56,7 @@ void build(void)
 		                   // 效果' > ' || '   '
 		n = 3;             // 前面三个空都有内容了，从第四个空开始填
 		                   // 正式填入文字部分
-		for (j = 0; name[screen][i][j] != '\0'; j++) {
+		for (j = 0; name[screen][i][j] != '\0' ; j++) {
 			lines[i][n] = name[screen][i][j];
 			n++;
 		}
@@ -76,38 +77,52 @@ void draw(void)
     for (i = 0; i < LINE; i++) {
     	if(lines[i][0] != '\0') printf("%s\n", lines[i]);
     }
+    show_status();   // ← 新加：把灯和电机的状态打一行出来，方便验收
 }
 
 // 主函数
 int main(void)
 {
-    int next;
+	int next;
     int key; // 按键
+    action_init();  // ← 新加：让 action.c 记下启动时刻
     build();
     draw();  // 显示菜单
     while (scanf("%d", &key) == 1) { // input 
-	// 向上走（循环）
-        if (key == 1) {
-		if(cursor[screen] == 0) cursor[screen] = count[screen] - 1;
-		else cursor[screen]--;
-	}
-	// 向下走（循环）
-        if (key == 2) {
-		if(cursor[screen] == count[screen] - 1) cursor[screen] = 0;
-        	else cursor[screen]++;
-	}
-	// 进入这一屏
-        if (key == 3) {
-		next = child[screen][cursor[screen]];
-        	if (next >= 0) screen = next;
-		else printf("  >> 执行：%s\n", name[screen][cursor[screen]]);
-        }
-	// 退出这一屏
-        if (key == 4 && parent[screen] >= 0) {
-		cursor[screen] = 0;
-		screen = parent[screen];
-	}
-	build();
+		switch (key) {
+
+			// 向上走（循环）
+			case 1:
+				if(cursor[screen] == 0) cursor[screen] = count[screen] - 1;
+				else cursor[screen]--;
+				break;
+
+			// 向下走（循环）
+			case 2:
+				if(cursor[screen] == count[screen] - 1) cursor[screen] = 0;
+       			else cursor[screen]++;
+				break;
+				
+			// 进入这一屏 || 执行命令
+			case 3:
+				next = child[screen][cursor[screen]];
+       			if (next >= 0) screen = next;
+				else do_action(screen, cursor[screen]); // ← 叶子项：交给 action.c
+				break;
+
+			// 退出这一屏
+			case 4:
+				if (parent[screen] >= 0) {
+					cursor[screen] = 0;
+					screen = parent[screen];
+				}
+				break;
+
+			default:
+				break;
+		
+		}
+		build();
         draw(); // 重新画屏
     }
     return 0;

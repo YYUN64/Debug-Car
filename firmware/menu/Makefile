@@ -11,8 +11,11 @@ CFLAGS     ?= -std=c99 -Wall -Wextra -O0 -g
 BUILD_DIR  := build
 TARGET     := $(BUILD_DIR)/menu
 
-$(TARGET): menu.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) menu.c -o $@
+# 要编译的 .c 文件。以后再多几个就继续往后面加
+SRCS       := menu.c action.c
+
+$(TARGET): $(SRCS) action.h | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(SRCS) -o $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
