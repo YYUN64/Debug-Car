@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "action.h"   // ← 新加：动作都写在 action.c 里，这里只留声明
+#include "action.h"   // 动作都写在 action.c 里，这里只留声明
 // 先定义一些变量备用
 #define MAX_SCREEN 7
 #define LINE_LEN 40
@@ -16,8 +16,8 @@ char name[MAX_SCREEN][LINE][LINE_LEN] = {
     { "学号"    , "版本"    , "运行时间"             }, // 第2屏 信息显示
     { "启动巡线", "停止巡线", "巡线速度"             }, // 第3屏 巡线功能
     { "蜂鸣器"  , "舵机测试", "LED 流水灯"           }, // 第4屏 拓展功能
-    { "开"      , "关"                               },	// 第5屏 灯一
-    { "开"      , "关"                               },	// 第6屏 灯二
+    { "开"      , "关"                               },	// 第5屏 LED 1
+    { "开"      , "关"                               },	// 第6屏 LED 2
 };
 char lines[LINE][LINE_LEN]; // 给OLED屏幕输出文字使用，储存字符
 int count[MAX_SCREEN]  = { 4, 4, 3, 3, 3, 2, 2 };  //判断每一屏有几行
@@ -27,17 +27,17 @@ int parent[MAX_SCREEN] = { // 回到哪
 	 0, // 信息显示
 	 0, // 巡线功能
 	 0, // 拓展功能
-	 1, // 灯一
-	 1, // 灯二
+	 1, // LED 1
+	 1, // LED 2
 };
 int child[MAX_SCREEN][LINE] = {
-	{  1,  2,  3,  4}, // 主菜单
-	{  5,  6, -1, -1}, // LED 控制
-	{ -1, -1, -1, -1}, // 信息显示
-	{ -1, -1, -1, -1}, // 巡线功能
-	{ -1, -1, -1, -1}, // 拓展功能
-	{ -1, -1, -1, -1}, // 灯一
-	{ -1, -1, -1, -1}, // 灯二
+	{  1,  2,  3,  4 }, // 主菜单
+	{  5,  6, -1, -1 }, // LED 控制
+	{ -1, -1, -1, -1 }, // 信息显示
+	{ -1, -1, -1, -1 }, // 巡线功能
+	{ -1, -1, -1, -1 }, // 拓展功能
+	{ -1, -1, -1, -1 }, // LED 1
+	{ -1, -1, -1, -1 }, // LED 2
 };
 int cursor[MAX_SCREEN] = { 0 };  // 指针位置
 int screen    = 0;               // 屏数
@@ -84,42 +84,48 @@ void draw(void)
 int main(void)
 {
 	int next;
-    int key; // 按键
-    action_init();  // ← 新加：让 action.c 记下启动时刻
-    build();
-    draw();  // 显示菜单
-    while (scanf("%d", &key) == 1) { // input 
+	int key; // 按键
+	action_init();  // ← 新加：让 action.c 记下启动时刻
+	build();
+	draw();  // 显示菜单
+	while (scanf("%d", &key) == 1) { // input 
 		switch (key) {
 
-			// 向上走（循环）
-			case 1:
-				if(cursor[screen] == 0) cursor[screen] = count[screen] - 1;
-				else cursor[screen]--;
-				break;
+		// 向上走（循环）
+		case 1:
+			if(cursor[screen] == 0) {
+				cursor[screen] = count[screen] - 1;
+			}
+			else cursor[screen]--;
+			break;
 
-			// 向下走（循环）
-			case 2:
-				if(cursor[screen] == count[screen] - 1) cursor[screen] = 0;
+		// 向下走（循环）
+		case 2:
+			if(cursor[screen] == count[screen] - 1) {
+				cursor[screen] = 0;
+			}
        			else cursor[screen]++;
-				break;
+			break;
 				
-			// 进入这一屏 || 执行命令
-			case 3:
-				next = child[screen][cursor[screen]];
+		// 进入这一屏 || 执行命令
+		case 3:
+			next = child[screen][cursor[screen]];
        			if (next >= 0) screen = next;
-				else do_action(screen, cursor[screen]); // ← 叶子项：交给 action.c
-				break;
+			// 叶子项：交给 action.c
+			else do_action(screen, cursor[screen]);
+			break;
 
-			// 退出这一屏
-			case 4:
-				if (parent[screen] >= 0) {
-					cursor[screen] = 0;
-					screen = parent[screen];
-				}
-				break;
+		// 退出这一屏
+		case 4:
+			if (parent[screen] >= 0) {
+				cursor[screen] = 0;
+				screen = parent[screen];
+			}
+			break;
 
-			default:
-				break;
+		// 除上面以外的情况
+		default:
+			break;
 		
 		}
 		build();

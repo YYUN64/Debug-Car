@@ -22,7 +22,9 @@ void action_init(void);
 /* 菜单里按 3 执行命令时调：
  *     scr  = 第几屏（menu.c 里的 screen）
  *     item = 这一屏的第几项（menu.c 里的 cursor[screen]） */
-void do_action(int scr, int item);
+void do_action(int oled, int arrow);
+
+void tick(int ms); // 计时
 
 /* 每次画屏时调一次：打印一行"灯和电机现在什么状态"。
  * 这个纯粹是方便你自己验收，用不上可以整段删掉。 */
