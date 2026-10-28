@@ -91,45 +91,44 @@ int main(void)
 	while (scanf("%d", &key) == 1) { // input 
 		switch (key) {
 
-		// 向上走（循环）
-		case 1:
+			// 向上走（循环）
+			case 1:
 			if(cursor[screen] == 0) {
 				cursor[screen] = count[screen] - 1;
 			}
 			else cursor[screen]--;
 			break;
 
-		// 向下走（循环）
-		case 2:
+			// 向下走（循环）
+			case 2:
 			if(cursor[screen] == count[screen] - 1) {
 				cursor[screen] = 0;
 			}
        			else cursor[screen]++;
 			break;
-				
-		// 进入这一屏 || 执行命令
-		case 3:
+
+			// 进入这一屏 || 执行命令
+			case 3:
 			next = child[screen][cursor[screen]];
        			if (next >= 0) screen = next;
 			// 叶子项：交给 action.c
 			else do_action(screen, cursor[screen]);
 			break;
 
-		// 退出这一屏
-		case 4:
+			// 退出这一屏
+			case 4:
 			if (parent[screen] >= 0) {
 				cursor[screen] = 0;
 				screen = parent[screen];
 			}
 			break;
 
-		// 除上面以外的情况
-		default:
-			break;
-		
+			// 除上面以外的情况
+			default:
+				break;
 		}
 		build();
-        draw(); // 重新画屏
+        	draw(); // 重新画屏
     }
     return 0;
 }
