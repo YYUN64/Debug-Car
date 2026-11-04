@@ -19,7 +19,7 @@ pkgs.mkShell {
     # ---- 拿到主控板后按需取消注释 ----
     # gcc-arm-embedded    # arm-none-eabi-gcc，STM32 交叉编译
     # openocd             # 下载 / 调试
-    # stlink              # ST-Link 工具
+    stlink                # ST-Link 工具
     # picocom             # 串口调试
   ];
 }
