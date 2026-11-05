@@ -111,7 +111,7 @@ void do_action(int oled, int arrow) {
 }
 
 void tick(int ms) {                   // 输入ms
-	if(led_shift == 0) return;   // 判断交替是否
+	if(led_shift == 0) return;    // 判断交替是否
 	led_ms += ms;                 // 计时
 	if(led_ms < 500) return;      // 判断是否到了该切换的时候
 	led_ms -= 500;                //
@@ -123,7 +123,7 @@ void tick(int ms) {                   // 输入ms
 			led_pwr[0] ? "亮" : "灭", led_pwr[1] ? "亮" : "灭");
 }
 /*
-使用 if + else 便于理解，3个版本后删除
+使用 if + else 便于理解，2个版本后删除
 void tick(int ms)
 {
 	if (led_alt_on == 0) return;
