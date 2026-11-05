@@ -12,7 +12,7 @@ BUILD_DIR  := build
 TARGET     := $(BUILD_DIR)/menu
 
 # 要编译的 .c 文件。以后再多几个就继续往后面加
-SRCS       := menu.c action.c
+SRCS       := menu.c action.c menu_pc.c
 
 $(TARGET): $(SRCS) action.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(SRCS) -o $@

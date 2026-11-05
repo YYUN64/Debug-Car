@@ -1,9 +1,6 @@
-#include <stdio.h>
-#include "action.h"   // 动作都写在 action.c 里，这里只留声明
-// 先定义一些变量备用
-#define MAX_SCREEN 7
-#define LINE_LEN 40
-#define LINE 4
+#include "action.h"
+#include "menu.h"
+// 更新提示：原本在这的三个define移动到了menu.h
 char title[MAX_SCREEN][LINE_LEN] = { 
       // 第 0 屏    第 1 屏    第 2 屏     第 3 屏     第 4 屏
 	"主菜单", "LED 控制", "信息显示", "巡线功能", "拓展功能",
@@ -42,9 +39,65 @@ int child[MAX_SCREEN][LINE] = {
 int cursor[MAX_SCREEN] = { 0 };  // 指针位置
 int screen    = 0;               // 屏数
 
+static int need_draw = 1;
+
+// 初始化
+void menu_init (void) {
+	screen = 0;
+	for (int i = 0; i < MAX_SCREEN; i++) {
+		cursor[i] = 0;
+	}
+	action_init(); // 在action.c中，用于初始化时间
+	need_draw = 1;
+}
+
+// 处理按键
+void menu_key (int key) {
+	int next = -1; // 初始化
+	switch (key) {
+
+		// 向上走（循环）
+		case 1:
+		if(cursor[screen] == 0) {
+			cursor[screen] = count[screen] - 1;
+		}
+		else cursor[screen]--;
+		break;
+
+		// 向下走（循环）
+		case 2:
+		if(cursor[screen] == count[screen] - 1) {
+			cursor[screen] = 0;
+		}
+		else cursor[screen]++;
+		break;
+
+		// 进入这一屏 || 执行命令
+		case 3:
+		next = child[screen][cursor[screen]];
+		if (next >= 0) screen = next;
+		// 叶子项：交给 action.c
+		else do_action(screen, cursor[screen]);
+		break;
+
+		// 退出这一屏
+		case 4:
+		if (parent[screen] >= 0) {
+			cursor[screen] = 0;
+			screen = parent[screen];
+		}
+		break;
+
+		// 除上面以外的情况
+		default:
+		break;
+	}
+	need_draw = 1;
+}
+
+
 // 构建字符内容
-void build(void) 
-{
+static void build(void) {
     int i, j, n;
     for (i = 0; i < LINE; i++) { // 判断这个OLED屏幕有多少行数
     	if(i < count[screen]) { // 判断这一屏有多少有效文本输出
@@ -68,67 +121,21 @@ void build(void)
 	} // 这么写好看一点，可以不使用{}
     }
 }
-// 画出屏幕
-// 把这一屏送到屏幕：电脑上用 printf，真机上换成 OLED 绘制
-void draw(void)
-{
-    int i;
-    printf("\n=== %s ===\n", title[screen]);
-    for (i = 0; i < LINE; i++) {
-    	if(lines[i][0] != '\0') printf("%s\n", lines[i]);
-    }
-    show_status();   // ← 新加：把灯和电机的状态打一行出来，方便验收
+
+// 渲染
+void menu_draw(void) {
+	build();
+	menu_render(); // 渲染 取决于用什么机器
 }
 
-// 主函数
-int main(void)
-{
-	int next;
-	int key; // 按键
-	action_init();  // ← 新加：让 action.c 记下启动时刻
-	build();
-	draw();  // 显示菜单
-	while (scanf("%d", &key) == 1) { // input 
-		switch (key) {
+// LED 交替翻转 action.c
+void menu_tick(int ms) {
+	tick(ms);
+}
 
-			// 向上走（循环）
-			case 1:
-			if(cursor[screen] == 0) {
-				cursor[screen] = count[screen] - 1;
-			}
-			else cursor[screen]--;
-			break;
-
-			// 向下走（循环）
-			case 2:
-			if(cursor[screen] == count[screen] - 1) {
-				cursor[screen] = 0;
-			}
-       			else cursor[screen]++;
-			break;
-
-			// 进入这一屏 || 执行命令
-			case 3:
-			next = child[screen][cursor[screen]];
-       			if (next >= 0) screen = next;
-			// 叶子项：交给 action.c
-			else do_action(screen, cursor[screen]);
-			break;
-
-			// 退出这一屏
-			case 4:
-			if (parent[screen] >= 0) {
-				cursor[screen] = 0;
-				screen = parent[screen];
-			}
-			break;
-
-			// 除上面以外的情况
-			default:
-				break;
-		}
-		build();
-        	draw(); // 重新画屏
-    }
-    return 0;
+// 询问是否要重新画屏
+int menu_dirty(void) {
+	int ready = need_draw;
+	need_draw = 0;
+	return ready;
 }
