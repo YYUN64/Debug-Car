@@ -2,24 +2,55 @@
 
 循迹小车的完整工程代码。**基础部分 60 分 + 拓展部分 40 分。**
 
----
+> 文档状态：2026-11-05（第 45 周），已按赛题原文和官方答疑核对。
+> 下面的“已完成 / 进行中”以仓库当前代码和板子上的实际验证为准；
+> 代码和进度随时会变，动手前先读对应目录的源码和 `README.md`。
 
-## 赛题给分项对照
+## 赛题与给分项
 
-| 项 | 内容 | 分值 | 计划代码位置 | 状态 |
+基础部分 60 分 + 拓展部分 40 分，**基础部分拿满 60 分才能参加拓展部分的线下考核**。
+评分以赛题原文为准；下表只做摘要，详细要求写在对应目录的 `README.md` 里。
+基础部分按提交的视频评分，可以多次验收并取最高分；同分时按该次材料提交时间早者优先。
+
+### 基础部分（60 分）
+
+| 项 | 分值 | 赛题要求（摘要） | 代码位置 | 现状（2026-11-05） |
 |---|---|---|---|---|
-| 1 | OLED 多级菜单 | 6 | `firmware/menu/` | 进行中（菜单逻辑已跑通，绘制已与逻辑分离，待接硬件） |
-| 2 | LED 控制 | 6 | `firmware/menu/action.c` | PC 部分完成（开 / 关 / 常亮 / 交替；交替 500 ms 翻转、永不停止），上板待换 HAL |
-| 3 | 人机交互与串口通信 | 8 | `firmware/modules/protocol/`、`host/` | 未开始 |
-| 4 | 巡线（传感器 / 一圈 / 两圈 / 特殊元素 / 完整地图） | 35 | `firmware/modules/track/` | 未开始 |
-| 5 | Git 仓库与开发记录 | 5 | 本仓库 | 进行中 |
-| 6.1 | 随机地图循迹 | 15 | `firmware/modules/track/` | 未开始 |
-| 6.2 | 参数设置与掉电保存 | 5 | `firmware/modules/config/` | 未开始 |
-| 6.3 | 遥控小车 | 10 | `host/` | 未开始 |
-| 6.4 | 巡线速度与控制性能 | 10 | `firmware/modules/track/pid/` | 未开始 |
+| 1a | 3 | 主菜单：上电即显示；箭头默认首行；按键 1/2 移动；至少 4 项（LED 控制 / 信息显示 / 巡线功能 / 拓展功能） | `firmware/menu/menu.c` | PC 版已满足；板端未接 |
+| 1b | 3 | 按键 3 进入选中的子菜单；在子菜单按键 4 返回主菜单 | `firmware/menu/menu.c` | PC 版已满足（一级子菜单）；板端未接 |
+| 2a | 2 | **在 LED 控制子菜单里**：按 1 两灯常灭→常亮，再按 1 常亮→常灭 | `menu.c` + `action.c` | **交互不符**：现在 1/2 是移动箭头，“常亮”是菜单项，按 3 才执行；而且再按 3 只重新常亮，不会切灭 |
+| 2b | 2 | **在 LED 控制子菜单里**：按 2 两灯交替闪烁；3 轮 × 30 s 内不得同亮、同灭或停 | `action.c` 的 `tick()` | 交替逻辑已有；**按键入口不符**，且 PC 版没喂 `tick()` |
+| 2c | 1 | 按 4 返回主菜单后，两灯常灭 | `menu.c` | **未实现**：4 只返回，不熄灭 |
+| 2d | 1 | LED 状态改变后 1 s 内，OLED 子菜单显示两灯实际亮灭 | `action.c` + `menu_board.c` | **未实现**：PC 有终端状态行，板端没有 |
+| 3a | 2 | 信息显示：姓名（拼音）、学号、变量 `a`（初值 0） | `menu.c` / `action.c` | 当前把“学号 / 版本 / 运行时间”拆成 3 个菜单项逐条显示，学号还是占位值，缺姓名和 `a`；建议改成同屏显示 |
+| 3b | 3 | 上位机经串口发值修改变量 `a` | 未建 | 未开始 |
+| 3c | 3 | 上位机发 `GET A` 读回 `a`；0、正数、负数 3 次一致 | 未建 | 未开始 |
+| 4a | 2 | OLED 显示全部巡线传感器状态，逐路 1 s 内更新 | 未建 | 未开始 |
+| 4b | 8 | 发车蜂鸣、循迹一圈、不脱线、回起点停车、OLED 显示本圈用时 | 未建 | 未开始 |
+| 4c | 10 | 特殊元素（十字 / 圆环 / 断路 / 直角 / 折线等）独立稳定通过，每种 5 次机会 | 未建 | 未开始 |
+| 4d | 15 | 固定复杂地图；未到终点按通过 1 / 2 / 3 个检查点得 1 / 2 / 4 分，到终点 5 分；5 次发车机会取最高 | 未建 | 未开始 |
+| 5 | 5 | 公开仓库、身份对应、每周有效提交、主要给分项有开发过程、录屏讲至少 2 个提交 | 本仓库 | 进行中（W41 ~ W45 每周都有提交） |
 
-基础部分必须拿到完整 60 分，才能参加拓展部分（40 分）的线下考核。
-给分代码集中在 `firmware/` 下：菜单框架在 `firmware/menu/`，各功能模块在 `firmware/modules/`。
+> ⚠️ **第 2 项是当前最大的差距**：赛题不是“在菜单里选‘常亮 / 交替’再按 3”，
+> 而是“**在 LED 控制子菜单界面里直接按 1 / 2 / 4**”。现在的通用导航
+> （1/2 移箭头、3 执行）和它冲突，必须在 `screen == 1` 时单独处理。
+>
+> ⚠️ 第 3a 项的信息内容也变了：赛题要**姓名拼音 + 学号 + 变量 `a`**，
+> 不是现在的“版本 / 运行时间”。
+
+### 拓展部分（40 分）
+
+| 项 | 分值 | 赛题要求（摘要） | 代码位置 | 现状 |
+|---|---|---|---|---|
+| 6.1 | 15 | 现场给出的随机地图，由基础元素组合 | 未建 | 未开始 |
+| 6.2 | 5 | OLED + 按键设置至少一个影响运行的参数，断电后保持 | 未建 | 未开始 |
+| 6.3 | 10 | 遥控前进 / 后退 / 左转 / 右转 / 停止；上位机显示状态；沿赛道跑一圈 | 未建 | 未开始 |
+| 6.4 | 10 | 固定地图速度测试，完整跑完不脱线才计分；推荐 PID | 未建 | 未开始 |
+
+> 拓展部分到线下场地验收，不拍视频；6.1 明确允许现场连接电脑修改和烧录程序，
+> 所以不受基础部分“同一份固件”的限制。基础部分拿满 60 分后才统计拓展成绩。
+
+`firmware/modules/` **尚未创建**：第 3、4 项的第一个模块落地时再建。
 
 ## 目录结构
 
@@ -27,146 +58,203 @@
 .
 ├── README.md
 ├── .gitignore
-├── shell.nix          PC 端开发环境：gcc / make / python3(pyserial)
-└── firmware/          小车固件工程（主控板 STM32F103，Arm Cortex-M3）
-    ├── menu/          OLED 多级菜单 —— 整个固件的顶层框架
-    │                  menu.c    表驱动菜单：screen / cursor 管数字，build() + draw() 管画面
-    │                  action.c  按键 3 执行什么：LED 开/关/常亮/交替 + tick(ms) 时间基准
-    └── modules/        各功能模块：串口 / 巡线 / 参数设置…
+├── shell.nix             Linux 开发环境：gcc / gnumake / python3(pyserial) / gcc-arm-embedded / stlink
+└── firmware/
+    ├── menu/             OLED 多级菜单 —— 逻辑层，PC 上可直接跑
+    │   ├── menu.c          菜单表 + screen / cursor / child / parent 状态机
+    │   ├── menu.h          三个宏、函数声明、title[] / lines[] / screen
+    │   ├── menu_pc.c       PC 渲染层（printf）+ main()（scanf 读键）
+    │   ├── action.c        当前按键 3 执行什么：LED 开 / 关 / 常亮 / 交替 + tick(ms)
+    │   ├── action.h
+    │   └── Makefile        make run：menu.c + action.c + menu_pc.c
+    └── hw/               STM32F103C8T6 裸机工程（寄存器，不用 HAL）
+        ├── Makefile        arm-none-eabi-gcc 构建，st-flash 烧录
+        ├── linker.ld       64KB Flash / 20KB RAM
+        └── src/
+            ├── startup.c   向量表 + 复位处理
+            ├── regs.h      RCC / GPIO / SysTick 寄存器定义
+            ├── hw.c/.h     时钟、LED、按键（SysTick 还在补，本人写）
+            ├── main.c      当前是硬件验证入口（按住 PB1 点亮 PA5）
+            ├── oled.c/.h   软件 I2C（PB11 / PB10）+ SSD1306
+            ├── gfx.c/.h    1KB 显存 + 5x7 ASCII
+            ├── gfx_zh.c + font12.c/.h   12px 中文点阵（与 gfx.c 二选一）
+            ├── font5x7.c/.h
+            └── menu_board.c  板端 menu_render()：把菜单画到 OLED
 ```
 
-> `firmware/modules/` 目前还是空的 —— Git 不跟踪空目录，等第一个功能模块落地时它自然会出现。
+> `firmware/hw/` 现在还在搭底层：`Makefile` 只编译 `main.c / startup.c / hw.c`，
+> 产物是 `led_test.bin`。OLED、字库、`menu_board.c` 已经放进 `src/`，
+> 等菜单接入时再加进构建。详见 [`firmware/hw/README.md`](firmware/hw/README.md)。
 
 ## 关键约束（决定了整个工程架构）
 
-基础部分第 1～4 项要求**一镜到底**录制：从第 1 项连续录到第 4 项，中途不得停止录制，
-也不得剪辑、暂停、加速，且**录制开始后不得修改代码、重新编译或重新烧录**。
+赛题对基础部分第 1～4 项的视频要求：
 
-这条规则直接决定了架构：
+- **必须一镜到底**：中途不得停止、剪辑、拼接、暂停、加速或替换画面 / 声音；
+  **中途断录整段无效**。
+- **不要求按题目顺序录**：可以先录第 4 项再录第 1～3 项，只要在视频里说明
+  当前演示的是哪个小题。
+- 第 1～4 项必须用**同一份完整工程、同一版程序**；**录制开始后不得修改代码、
+  重新编译、重新烧录，或更换主控板**。
+- 题目规定的测试轮数 / 发车机会都在**这一段视频内连续计算**。
+- 正式录制前可以不限次数调试、练习、重拍；最终只提交**一段连续**的硬件演示视频。
+- 第 5 项 Git 仓库**允许单独录电脑屏幕**并口头讲解，不必和硬件视频在同一段。
+- 视频要拍清操作过程、单片机 / 小车状态，以及 OLED、上位机或赛道结果；
+  **画面里确认不了的内容不得分**。
+- 在规定时间内把基础部分视频和 Git 仓库地址私发给考核负责人。
+- 除题目规定的测试时长外，不限制完成时间，也不按速度评分。
+
+这些规则直接决定了架构：
 
 - **必须一份固件覆盖全部基础项**，不能按功能拆成多个工程；
 - **OLED 菜单是整个固件的顶层框架**，所有功能都从菜单进入；
 - **主循环不允许阻塞延时**（不用 `delay`），一律「定时器中断 + 状态机」。
   否则 LED 交替、OLED 状态刷新（要求 1 秒内更新）和按键响应会互相干扰，一定会挂。
 
-> 第 2 项原文的「测试 3 轮，每轮 30 秒」是**验收方的测法**，不是固件要做的事：
-> 固件只管一直交替、永不自动停，因为原文明确「期间不得出现同时常亮、
-> 同时常灭或闪烁停止」。代码里 `led_ms` 只用来计时翻转，没有「数够 3 轮就收工」的分支。
+> 第 2 项原文的「测试 3 轮，每轮 30 秒」是**验收方的测法**：
+> 测试期间不能出现同时常亮、同时常灭或闪烁停止。代码里干脆做成
+> 一直交替、不设“数够 3 轮就关灯”的分支。
 
-## 模块移植约定
+## 分层与移植约定
 
-目标平台已确定为 **STM32F103 + STM32 HAL 库**（详见「开发环境」）。
-`firmware/menu/` 和以后的模块遵守三条约定，目标是「先在电脑上写和测，拿到板子直接移植」：
+赛题**没有指定开发板和技术路线**（答疑原话：“没有指定的开发板，只有推荐”）。
+培训推荐的是 STM32F103 + HAL；本项目选 F103C8T6，当前先用**寄存器裸机**把
+时钟、GPIO、I2C、SysTick 弄懂，之后如果换 HAL / PlatformIO，`firmware/menu/`
+的逻辑层不需要改。
 
 1. **纯 C，只用已经掌握的东西**：`int`、数组、全局变量、`if` / `for` / `while`。
-   不用指针、不用回调、不用结构体、不用动态内存 —— 能绕开就绕开；
+   不用回调、不用结构体、不用动态内存；指针只在躲不开时用；
 2. **一个模块一对 `.c` + `.h`**：`.h` 里只放函数声明，模块内部状态用 `static` 变量藏在 `.c` 里；
-3. **硬件调用集中在一处，并标出上板时换成什么**：现在全是 `printf` 占位，
-   上板那天按注释替换（`printf` → `HAL_GPIO_WritePin`）。逻辑函数里不出现 GPIO、定时器这些词。
+3. **逻辑和平台分开**：`menu.c` 只算“这一屏显示什么、箭头停在哪”，结果写进
+   `title[]` / `lines[]`；真正碰屏幕的只有 `menu_render()` ——
+   PC 版在 `menu_pc.c`（`printf`），板端在 `hw/src/menu_board.c`（OLED）。
+   `action.c` 的输出还是 `printf`、时间还是 `time()`，上板时换成 `hw.c` 的
+   `led1_set()` / `led2_set()` / `millis()`，判断逻辑不变。
 
-这样每个模块都能配一个 PC 上的测试程序，用 gcc 编译运行、验证逻辑，不必等硬件到位。
-`firmware/menu/` 已经按这个思路分好了层：`build()` 只生成要显示的文字，
-`draw()` 才是碰屏幕的那一层；`action.c` 负责「按下去之后做什么」，
-其中的 `tick(ms)` 是**全工程的公共时间基准**（以后电机、串口超时都复用它）。
+`tick(ms)` 是**全工程的公共时间基准**（LED 交替现在就靠它，以后电机、串口超时也复用它）：
+**PC 版目前没有喂它**（所以 PC 上看不到交替真的闪）；板端由主循环把 `millis()` 的差值传进去。
 
 ## 开发环境
 
-**全部开发工作都在 Linux（NixOS）上完成**，工具链由仓库根目录的 `shell.nix` 提供，
-`nix-shell` 一条命令进入，不需要装任何全局软件。
-
 | 项目 | 内容 |
 |---|---|
-| 主控板 | **STM32F103 系列**（Arm Cortex-M3 内核，72 MHz） |
-| 开发方式 | **STM32 HAL 库** |
-| 固件框架 | PlatformIO + `framework = stm32cube`（即 ST 官方 STM32Cube HAL） |
-| 交叉编译器 | `arm-none-eabi-gcc` |
-| 烧录 / 调试 | ST-Link（`openocd` / `st-flash`）；无 ST-Link 时可用串口 ISP（`stm32flash`） |
-| 串口终端 | `picocom` 或 `pio device monitor` |
-| 上位机 | Python 3 + pyserial |
-| 版本管理 | Git + GitHub |
+| 主控板 | **STM32F103C8T6**（Blue Pill，Cortex-M3，72 MHz，**64 KB Flash / 20 KB SRAM**）；赛题未指定板卡，这是自选 |
+| 调试器 | ST-Link V2（SWD：`SWDIO=PA13`、`SWCLK=PA14`） |
+| 交叉编译器 | `arm-none-eabi-gcc`（`shell.nix` 里的 `gcc-arm-embedded`） |
+| 构建 | 手写 `Makefile`（PC 用 gcc，板子用 arm-none-eabi-gcc + 自写 `linker.ld`） |
+| 烧录 | `st-flash`（`stlink` 包）；`make -C firmware/hw flash` |
+| 上位机 | Python 3 + pyserial（第 3 项，未开始） |
+| 操作系统 | NixOS（x86_64），工具链全部来自 nixpkgs |
 
-> 培训教程（`环境配置教程.pdf`）走的是 **Windows + Keil MDK + STM32CubeMX** 路线。
-> Keil MDK 只有 Windows 版，Linux 上用不了；但赛题只要求 **STM32F103 + HAL 库**，
-> IDE 是自选的，因此这里改用 PlatformIO。教程中仍然有效的部分是
-> **芯片型号、HAL 库、以及"烧录后板载 LED 闪烁即链路正常"这条验收标准**。
+`nix-shell` 当前提供：`gcc`、`gnumake`、`python3`（带 pyserial）、
+`gcc-arm-embedded`、`stlink`；`openocd`、`picocom` 在 `shell.nix` 里仍被注释。
+
+> 赛题不限定开发板和技术路线；答疑明确“没有指定的开发板，只有推荐”。
+> 这里用 F103C8T6，是因为培训资料和手头硬件都是它。
+
+**PlatformIO 没有用上**：`pio` 不在 PATH，仓库里也没有 `platformio.ini`，
+当前全部用 `Makefile` 构建。以后换 HAL 时再决定用不用它。
 
 ### 工作流
 
 ```bash
 cd ~/git/Debug-Car
-nix-shell                         # 进入开发环境（arm-none-eabi-gcc / openocd / stlink / picocom / platformio）
+nix-shell                        # gcc / make / arm-none-eabi-gcc / st-flash
 
-pio boards STM32F103              # 列出支持的 F103 板子
-pio run                           # 编译
-pio run -t upload                 # 烧录（ST-Link）
-pio device monitor                # 看串口输出
+make -C firmware/menu run        # 1) 电脑上跑菜单，不需要板子
+make -C firmware/hw              # 2) 编译板端工程，产物 firmware/hw/led_test.bin
+make -C firmware/hw flash        # 3) ST-Link 烧录
 ```
 
-**板子 id 待定** —— 培训板的具体型号要等拿到板子才知道，对应关系参考：
+> 板端现在是“底层验证”版本：`main.c` 只做“按住 PB1 点亮 PA5”，
+> 完整菜单固件还没接进仓库内的构建（见 `firmware/hw/README.md`）。
+> E5 收尾前，`make -C firmware/hw` 会报 `undefined reference to 'SysTick_Handler'`，
+> 补上 `hw.c` 就能过。
 
-| 培训板 | PlatformIO board id |
+## 硬件与接线
+
+| 功能 | 引脚 / 说明 |
 |---|---|
-| BluePill / 最小系统板 STM32F103C8T6（64K Flash） | `bluepill_f103c8` |
-| 同上，标称 128K Flash | `bluepill_f103c8_128k` |
-| BlackPill STM32F103C8T6 | `blackpill_f103c8` |
-| ST Nucleo-F103RB | `nucleo_f103rb` |
+| 主控 | STM32F103C8T6 最小系统板（Blue Pill），chipid `0x410`，**64 KB Flash / 20 KB SRAM** |
+| 调试器 | ST-Link V2（克隆，SWD 四线：`3.3V` / `GND` / `SWDIO=PA13` / `SWCLK=PA14`，`NRST` 可选） |
+| OLED | SSD1306 128×64，**软件 I2C**：`SCL=PB11`、`SDA=PB10`，地址 `0x3C`（也会探 `0x3D`） |
+| 按键 1 / 2 | `PB1` / `PB0`，内部上拉、按下接 GND |
+| 按键 3 / 4 | `PA7` / `PA6`，同上 |
+| LED 1 / LED 2 | 外接 `PA5` / `PA4`，**高电平点亮**，各串 330Ω 到 GND（红色 LED） |
+| 板载 LED | `PC13`，低电平点亮；现在只作“屏幕没应答”的故障闪灯 |
+| 串口 | 未接（USB-TTL 已到）；固件里还没有 USART 代码，等第 3 项 |
 
-> 板子到了以后拿芯片丝印去 `pio boards STM32F103` 里对；不能确定时先用
-> `bluepill_f103c8`（F103C8T6 是最常见的培训芯片）。
+> 供电只选一种：ST-Link 的 `3.3V` 或板子的 USB，不要同时接。
+> ST-Link / 串口权限：普通用户需要 udev 规则（`services.udev.packages` 里加
+> `openocd` / `stlink`）或临时放开设备权限；串口还需要在 `dialout` 组里。
 
-### 烧录方式
+## 烧录
 
 | 手头有什么 | 怎么烧 |
 |---|---|
-| ST-Link（教程里那种） | `pio run -t upload`，或 `st-flash write .pio/build/<board>/firmware.bin 0x8000000` |
-| 只有 USB 转串口 | F103 自带 ROM 引导程序：BOOT0 接 1 再上电，用 `stm32flash` 走 USART1 烧录 |
+| ST-Link（现在用的） | `make -C firmware/hw flash`，或 `st-flash write firmware/hw/led_test.bin 0x08000000` |
+| 只有 USB 转串口 | F103 自带 ROM 引导：BOOT0 接 1 再上电，用 `stm32flash` 走 USART1（`PA9=TX` / `PA10=RX`） |
 
-**验收标准（与培训教程一致）**：编译烧录后**板载 LED 闪烁**，说明
-「工具链 + HAL + 烧录」整条链路已通。能找到芯片型号并不等于工程一定能编译成功。
+**验收标准**：烧录后现象对得上 —— 当前这版是“按住 PB1，PA5 上的 LED 亮；松开灭”。
 
-### 常见问题
+## HAL / PlatformIO（可选，不是赛题要求）
 
-- **PlatformIO 的工具链报 `No such file or directory`**：NixOS 上预编译二进制通常找不到
-  `/lib64/ld-linux-x86-64.so.2`。解法是在系统配置里开 `programs.nix-ld.enable = true;`。
-- **串口 `Permission denied`**：用户不在 `dialout` 组，或 udev 规则未安装。
-- **ST-Link 认不到设备**：`services.udev.packages` 里没加 `openocd` / `stlink`，
-  或需要重新插拔一次。
+赛题不规定技术路线，寄存器裸机也能完成；培训推荐 HAL。
+如果之后决定换 HAL，再决定用 PlatformIO 还是 Makefile + HAL 源码。
 
-> **环境状态（2026-10-27 复核）**：`pio --version`（6.1.19）与 `pio boards STM32F103`
-> （列出 20 块 F103 板子）已实测可用；**端到端编译仍未跑通** —— 首次下载
-> arm-none-eabi 工具链时卡住了，之后一直没再试。主控板与烧录器都在路上，
-> 到手前先单独跑一次 `pio run`，若报上面第一条错误就按 `nix-ld` 的办法开。
+- 板子 id（PlatformIO）：`bluepill_f103c8`（F103C8T6，64 KB Flash）；
+- 已知状态：`pio boards STM32F103` 能列出板子，但**端到端 `pio run` 至今没跑通**；
+  如果报 `No such file or directory`，在 NixOS 上要开 `programs.nix-ld.enable = true;`；
+- 教程里的 Keil MDK 是 Windows 专用，Linux 上用不了；赛题没有限定 IDE。
 
 ## 开发计划
 
 | 阶段 | 内容 | 对应给分项 | 状态 |
 |---|---|---|---|
-| 0 | C 语言基础、Git 工作流、工具链（Linux + PlatformIO + `arm-none-eabi-gcc`） | 第 5 项 | 进行中 |
-| 1 | OLED 多级菜单状态机 | 第 1 项 | 进行中（PC 上跑通，待接硬件） |
-| 2 | LED 控制与状态显示 | 第 2 项 | PC 部分完成（2026-10-27，`tick(ms)` + 交替 500 ms 翻转），待接硬件 |
-| 3 | 串口协议与上位机 | 第 3 项 | 未开始 |
+| 0 | C 语言基础、Git 工作流、工具链（Linux + `arm-none-eabi-gcc` + `st-flash`） | 第 5 项 | 基本完成（PlatformIO 未用） |
+| 1 | OLED 多级菜单状态机 | 第 1 项 | 进行中（PC 版满足，板端底层在搭） |
+| 2 | LED 控制与状态显示 | 第 2 项 | 进行中（交替逻辑已有；按键交互不符，待改） |
+| 3 | 信息显示、串口协议与上位机 | 第 3 项 | 信息屏有占位，串口未开始 |
 | 4 | 电机驱动、灰度传感器、基础巡线 | 第 4.a / 4.b 项 | 未开始 |
-| 5 | PID 调参、特殊元素、完整地图 | 第 4.c / 4.d / 4.e 项 | 未开始 |
+| 5 | PID 调参、特殊元素、完整地图 | 第 4.c / 4.d 项 | 未开始 |
 | 6 | 拓展部分 | 第 6 项 | 未开始 |
 
-## 提交规范
+## 第 5 项：Git 仓库与开发记录（5 分）
 
-赛题第 5 项要求「每周至少产生一次有效提交」，且只修改提交时间、提交说明或与赛题无关的
-内容不计为有效提交。
+赛题要求：
 
-- 提交说明格式：`类型: 一句话说清做了什么`
-  - `feat` 新增功能 · `fix` 修 bug · `docs` 文档 · `chore` 杂项 · `refactor` 重构
-- **每周至少一次**与给分项目相关的真实代码提交；
+- 仓库**公开可访问**（面试前设置好），提交作者姓名 / 邮箱对应本人，
+  邮箱绑定到 GitHub / Gitee 账号；
+- 赛题公布后**每周至少产生一次有效提交**；
+- 每个已实现的主要给分项，都能在提交记录里找到对应的开发过程；
+- 录屏展示仓库主页、提交记录、作者姓名和邮箱，并选**至少两个**与给分项目
+  相关的提交，说明修改内容和实现思路；
+- **只修改提交时间、提交说明或与赛题无关的内容，不计为有效提交。**
+
+提交说明格式：`类型: 一句话说清做了什么`
+
+- `feat` 新增功能 · `fix` 修 bug · `docs` 文档 · `chore` 杂项 · `refactor` 重构
+- 每周至少一次与给分项目相关的真实代码提交；
 - 不提交编译产物（见 `.gitignore`）；
-- 提交作者姓名与邮箱对应本人，邮箱已绑定 GitHub 账号。
+- 提交前先编译 / 跑一遍，确认能过再提交。
 
 ## 说明
 
-- 本仓库代码由本人独立完成，不与其他选手共用。
-- 赛题原文要点与评分细则整理在各模块的 `README.md` 里。
+- 赛题要求参赛代码**独立完成**，会严格查重，并在面试时安排**代码答辩**。
+- 各模块的接线、构建命令、当前进度和待办写在各目录的 `README.md` 里：
+  - [`firmware/menu/README.md`](firmware/menu/README.md) —— 菜单逻辑层；
+  - [`firmware/hw/README.md`](firmware/hw/README.md) —— 板端裸机工程。
 
 ## AI
-- `action.c` 的**第一版**由 AI 生成；2026-10 已由本人整篇重写（LED 状态改成 `led_pwr[2]`
-  数组、新增 `tick(ms)` 时间基准与交替状态机、修正电机启停方向），现在能逐行讲清。
-- `action.h` 沿用 AI 初版的文件说明注释，本人只补了一行 `void tick(int ms);` 声明。
-- 其余文件（`menu.c`、`Makefile`、`shell.nix` 等）均由本人编写，AI 只做审阅、讲解和查错。
+
+- 答疑明确：**允许使用 AI 编程，但必须理解代码**；**答辩现场暂不允许 AI 辅助**，
+  现场改代码是允许的。所以 AI 参与过的文件都要能逐行讲清。
+- `firmware/menu/action.c` 的**第一版**由 AI 生成；2026-10 已由本人整篇重写
+  （LED 状态改成 `led_pwr[2]` 数组、新增 `tick(ms)` 时间基准与交替状态机、
+  修正电机启停方向），现在能逐行讲清。
+- `firmware/hw/` 里的启动 / 链接 / 寄存器 / OLED / 字库
+  （`startup.c`、`linker.ld`、`regs.h`、`oled.c`、`gfx.c`、`gfx_zh.c`、
+  `font5x7.c`、`font12.c`）是**复用的模板，由 AI 生成**；本人已逐段读懂用途，
+  能讲清“向量表为什么在 Flash 开头、1KB 显存怎么按页刷给 SSD1306”。
+- `hw.c`、`main.c`、`menu.c`、`menu_pc.c` 由本人编写；AI 只做审阅、讲解和查错。
+- `action.h` 沿用 AI 初版的文件说明注释，本人补了 `tick(ms)` 的声明。
