@@ -126,6 +126,7 @@ static void build(void) {
 void menu_draw(void) {
 	build();
 	menu_render(); // 渲染 取决于用什么机器
+		       // 这个函数在 menu_pc.c 中
 }
 
 // LED 交替翻转 action.c

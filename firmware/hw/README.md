@@ -77,8 +77,8 @@ make TOOLCHAIN=/path/to/gcc-arm-none-eabi/bin/arm-none-eabi-
 | E4 按键消抖 | 进行中 | `hw.h` 已定 `keys_scan()`：每 5 ms 调一次，连续 3 次一致（约 15 ms）才认 |
 | E5 SysTick 1ms | 进行中 | `startup.c` 的向量表已留 `SysTick_Handler`；`hw.c` 还要补 `SysTick_Handler()` / `delay_ms()` / `millis()`（补齐前链接会报 `undefined reference to 'SysTick_Handler'`） |
 | 接 OLED | 待做 | `oled.c` / `gfx.c` / `font5x7.c` 已拷入 `src/`，`menu_board.c` 的渲染函数已写好，未加进构建 |
-| 接菜单 | 待做 | `menu.c` / `action.c` 在 `../menu/`，要一起编译；**先按赛题改 LED 控制屏的 1/2/4 按键**，再接板端 |
-| 第 2d 状态显示 | 待做 | 赛题要求 LED 控制子菜单 1 s 内显示两灯状态；`menu_board.c` 目前只画标题和菜单行 |
+| 接菜单 | 待做 | `menu.c` / `action.c` 在 `../menu/`，要一起编译；先接现有菜单，第 2 项的 1/2/4 按键**待确认**，要改再动 |
+| 第 2d 状态显示 | 待确认 | 若按赛题字面，LED 控制子菜单要 1 s 内显示两灯状态；`menu_board.c` 目前只画标题和菜单行 |
 
 `hw.h` 里已经定好的接口：`hw_init()`、`delay_ms()`、`millis()`、`led1_set()`、
 `led2_set()`、`keys_scan()`、`key1_pressed()`（PB1 的调试用单键读取）。
@@ -129,10 +129,12 @@ make TOOLCHAIN=/path/to/gcc-arm-none-eabi/bin/arm-none-eabi-
 - [ ] E4 / E5 收尾：`hw.c` 补齐 `keys_scan()`、`SysTick_Handler()`、`delay_ms()`、
       `millis()`、`led2_set()`，`hw_init()` 配齐 PA4 / PA5 / PC13 和四个按键。
 - [ ] 把 `oled.c` / `gfx.c` / 字库 / `menu_board.c` 加进 `Makefile`，先点亮屏幕。
-- [ ] 接 `../menu/menu.c` 与 `action.c`：**先按赛题把 LED 控制屏改成按 1 / 2 / 4
-      直接控制**，再把 `action.c` 的 `printf` / `time(NULL)` 换成
+- [ ] 接 `../menu/menu.c` 与 `action.c`：先接现有菜单；第 2 项的按键语义**待确认**，
+      如果考核不接受现有菜单操作，再按赛题把 LED 控制屏改成按 1 / 2 / 4 直接控制。
+      然后把 `action.c` 的 `printf` / `time(NULL)` 换成
       `led1_set()` / `led2_set()` / `millis()`，主循环把 `millis()` 的差值喂给 `menu_tick()`。
-- [ ] 第 2d 项：板端 OLED 显示两灯实际状态（1 s 内），需要 `action.c` 提供状态读取接口。
+- [ ] 第 2d 项（若按赛题字面）：板端 OLED 显示两灯实际状态（1 s 内），
+      需要 `action.c` 提供状态读取接口。
 - [ ] 第 3a 项：信息屏同屏显示姓名拼音 / 学号 / 变量 `a`（初值 0），
       学号别再留 `2023000000` 占位。
 - [ ] 板端字库按中文 / 英文选对（`gfx.c` 对 `gfx_zh.c`），否则中文画不出来。
