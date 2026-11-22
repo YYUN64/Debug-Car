@@ -28,7 +28,7 @@
 | 按键 3（进入 / 执行） | **PA7** → 另一端 GND | 同上 |
 | 按键 4（返回） | **PA6** → 另一端 GND | 同上 |
 | LED 1 | **PA5** → 330Ω → 红色 LED → GND | **高电平点亮** |
-| LED 2 | **PA4** → 330Ω → 红色 LED → GND | **高电平点亮** |
+| LED 2 | **PB9** → 330Ω → 红色 LED → GND | **高电平点亮**；PA4 曾试过但无输出（原因未查明），已弃用 |
 | 板载 LED | **PC13** | 低电平点亮；只作“屏幕没应答”的故障闪灯 |
 | 串口 | 未接 | USB-TTL 已到；固件里还没有 USART 代码，等第 3 项 |
 
@@ -116,7 +116,7 @@ make TOOLCHAIN=/path/to/gcc-arm-none-eabi/bin/arm-none-eabi-
 - **SysTick 中断里不要调 `menu_draw()`、不要放长循环**，只做计数。
 - **软件 I2C 的速率**由 `oled.c` 的 `I2C_DELAY` 决定（现在是 5）：太小会 NACK，
   太大刷得更慢；SSD1306 上限 400 kHz。
-- **LED 极性 / 颜色**：PC13 低电平亮，PA4 / PA5 高电平亮，接线和改代码时别搞反。
+- **LED 极性 / 颜色**：PC13 低电平亮，PB9 / PA5 高电平亮，接线和改代码时别搞反。
   红 / 绿 / 黄 LED 的 Vf ≈ 2 V，3.3 V 串 330Ω 约 4 mA，正常；蓝 / 白 Vf ≈ 3.0～3.4 V，
   同样 330Ω 只剩零点几 mA，会很暗甚至不亮 —— 用红灯，或把蓝灯电阻降到 100Ω 以下。
 - **启动与链接**：向量表必须在 Flash 最前面；`.data` 的初值在 Flash 里，
@@ -127,7 +127,7 @@ make TOOLCHAIN=/path/to/gcc-arm-none-eabi/bin/arm-none-eabi-
 ## 待办
 
 - [ ] E4 / E5 收尾：`hw.c` 补齐 `keys_scan()`、`SysTick_Handler()`、`delay_ms()`、
-      `millis()`、`led2_set()`，`hw_init()` 配齐 PA4 / PA5 / PC13 和四个按键。
+      `millis()`、`led2_set()`，`hw_init()` 配齐 PB9 / PA5 / PC13 和四个按键。
 - [ ] 把 `oled.c` / `gfx.c` / 字库 / `menu_board.c` 加进 `Makefile`，先点亮屏幕。
 - [ ] 接 `../menu/menu.c` 与 `action.c`：先接现有菜单；第 2 项的按键语义**待确认**，
       如果考核不接受现有菜单操作，再按赛题把 LED 控制屏改成按 1 / 2 / 4 直接控制。
